@@ -51,8 +51,8 @@ class ComposerStaticInit69268f627087dff13807f3f0b82eaa19
     );
 
     public static $classMap = array (
-        'Asana' => __DIR__ . '/../..' . '/asana.php',
-        'AsanaAuth' => __DIR__ . '/../..' . '/asana-oauth.php',
+        'App\\AsanaAuth' => __DIR__ . '/../..' . '/asana-oauth.php',
+        'Asana\\Asana' => __DIR__ . '/../..' . '/asana.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

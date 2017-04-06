@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+// application.php
+
+require __DIR__.'/vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use App\SayHelloCommand;
+use App\ConnectAsanaCommand;
+use App\AsanaWorkspaceCommand;
+use Asana\Asana;
+use App\AsanaProjectsCommand;
+use App\ProjectListCommand;
+//use App\Command;
+
+$app = new Application('Console demo', '1.0');
+
+$app->add(new SayHelloCommand);
+
+//$app->add(new Command(new Asana(array('personalAccessToken' => '0/178f955ea6ef8967a61293390e07f496'))));
+
+$app->add(new ConnectAsanaCommand(new Asana(array('personalAccessToken' => '0/178f955ea6ef8967a61293390e07f496'))));
+
+$app->add(new AsanaWorkspaceCommand());
+
+//$app->add(new AsanaProjectsCommand());
+
+//$app->add(new ProjectListCommand());
+
+$app->run();

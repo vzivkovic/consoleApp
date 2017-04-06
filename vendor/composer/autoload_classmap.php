@@ -6,6 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Asana' => $baseDir . '/asana.php',
-    'AsanaAuth' => $baseDir . '/asana-oauth.php',
+    'App\\AsanaAuth' => $baseDir . '/asana-oauth.php',
+    'Asana\\Asana' => $baseDir . '/asana.php',
 );

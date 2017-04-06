@@ -1,61 +1,155 @@
-<?php 
+<?php
 namespace App;
 
 require_once 'vendor/autoload.php';
-require_once('asana.php');
 
 use Asana\Asana;
-
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ConnectAsanaCommand extends Command
 {
 
-    protected $asana;
-    public static $token;
+  protected $defaultToken;
+  protected $asana;
+  protected $getIds = [];
+  protected static $text;
+
+  public function __construct(Asana $defaultToken)
+  {
+      $this->defaultToken = $defaultToken;
+
+      parent::__construct();
+  }
 
     protected function configure()
     {
+      //$defaultToken = $this->defaultToken;
+
         $this
-            // the name of the command (the part after "bin/console")
             ->setName('connect')
-
-            // the short description shown while running "php bin/console list"
             ->setDescription('Enter your Asana token.')
-
-            // the full command description shown when running the command with
-            // the "--help" option
             ->setHelp('This command allows you to create a user...')
-            ->addArgument('token', InputArgument::OPTIONAL, 'Token')
+            ->addArgument('token', InputArgument::OPTIONAL, 'Enter token')
+            // ->addOption(
+            //   'token',
+            //   '-t',
+            //   InputOption::VALUE_OPTIONAL,
+            //   'Who do you want to greet?',
+            //   $defaultToken
+            // )
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        self::$token = $input->getArgument('token');
+      self::$text = new SymfonyStyle($input,$output);
+      //$this->text = new SymfonyStyle($input, $output);
+      $token = $input->getArgument('token');
 
+      $this->asana = $this->setToken($token);
+      //$this->asana = $this->defaultToken;
+      //$input->getOption('token');
 
-        // See class comments and Asana API for full info
-        $this->asana = new Asana(array('personalAccessToken' => '0/178f955ea6ef8967a61293390e07f496')); // Create a personal access token in Asana or use OAuth
+      // Get all workspaces
+      $this->asana->getWorkspaces();
 
-        // Get all workspaces
-        $this->asana->getWorkspaces();
+      // As Asana API documentation says, when response is successful, we receive a 200 in response so...
+      $this->printError();
 
-        // As Asana API documentation says, when response is successful, we receive a 200 in response so...
-        if ($this->asana->hasError()) {
-        echo 'Error while trying to connect to Asana, response code: ' . $asana->responseCode;
-        return;
+      self::$text->newLine(1);
+      self::$text->progressStart(100);
+      self::$text->newLine(1);
 
-        }
+      //$this->callWorkspaceCommand($output);
+      $workspaceCommand = $this->getApplication()->find('workspace');
+      $arguments = array(
+          'command' => 'workspace',
+          'token'    => $this->asana,
+          //'--yell'  => true,
+      );
 
-        $output->writeln("<info>" . self::$token . "</info>");
+      $greetInput = new ArrayInput($arguments);
+      $workspaceCommand->run($greetInput, $output);
+
+      self::$text->progressFinish();
+      self::$text->newLine(1);
+      self::$text->text("The End!");
+      self::$text->newLine(1);
+
     }
+
+    protected function printError()
+    {
+      if ($this->asana->hasError())
+      {
+         self::$text->error(array('Error while trying to connect to Asana, response code: ' . $this->asana->responseCode));
+         return;
+      }
+
+    }
+
+    protected function printErrorContinue()
+    {
+      if ($this->asana->hasError())
+      {
+         self::$text->error(array('Error while trying to connect to Asana, response code: ' . $this->asana->responseCode));
+         continue;
+      }
+
+    }
+
+    protected function setToken($token)
+    {
+      if(is_object($token)) return $token;
+
+      return empty($token) ? $this->defaultToken : new Asana(array('personalAccessToken' => $token));
+    }
+
+    protected function message($message = '')
+    {
+        if(count($this->getIds))
+        {
+          self::$text->success('Success ' . $message);
+        }else{
+          self::$text->caution('Not find any items!');
+        }
+    }
+
+    protected function callWorkspaceCommand($output)
+    {
+      $workspaceCommand = $this->getApplication()->find('workspace');
+      $arguments = array(
+          'command' => 'workspace',
+          'token'    => $this->asana,
+          //'--yell'  => true,
+      );
+
+      $greetInput = new ArrayInput($arguments);
+      $workspaceCommand->run($greetInput, $output);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }
